@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type Value struct {
@@ -114,7 +115,7 @@ func (v Value) MustStringSlice(opts ...Option[string]) []string {
 //	NewValue("").Bool(false) // false, nil
 //	NewValue("abc").Bool() // false, error
 func (v Value) Bool(dv ...bool) (bool, error) {
-	return get[bool](v, append(dv, true), strconv.ParseBool)
+	return get(v, append(dv, true), strconv.ParseBool)
 }
 
 // MustBool returns bool value of payload ignore error
@@ -149,6 +150,49 @@ func (v Value) BoolSlice(opts ...Option[bool]) ([]bool, error) {
 //	NewValue("").MustBoolSlice(WithDefault[bool](true, false)) // []bool{true, false}
 func (v Value) MustBoolSlice(opts ...Option[bool]) []bool {
 	return must(v.BoolSlice(opts...))
+}
+
+// Duration returns time.Duration value of payload
+//
+//	NewValue("3s").Duration() // time.Second*3, nil
+//	NewValue("").Duration() // time.Duration(0), nil
+//	NewValue("").Duration(time.Second) // time.Second, nil
+//	NewValue("abc").Duration() // time.Duration(0), error
+func (v Value) Duration(dv ...time.Duration) (time.Duration, error) {
+	return get(v, dv, time.ParseDuration)
+}
+
+// MustDuration returns time.Duration value of payload ignore error
+//
+//	NewValue("3s").MustDuration() // time.Second*3
+//	NewValue("").MustDuration() // time.Duration(0)
+//	NewValue("").MustDuration(time.Second) // time.Second
+//	NewValue("abc").MustDuration() // time.Duration(0)
+func (v Value) MustDuration(dv ...time.Duration) time.Duration {
+	return must(v.Duration(dv...))
+}
+
+// DurationSlice returns []time.Duration
+//
+//	NewValue("1m,2s").DurationSlice() // []time.Duration{time.Minute, time.Second*2}, nil
+//	NewValue("").DurationSlice() // nil, error
+//	NewValue("1m;2s").DurationSlice(WithDelimiter[time.Duration](";")) // []time.Duration{time.Minute, time.Second*2}, nil
+//	NewValue("").DurationSlice(WithDefault[time.Duration](time.Minute, time.Second)) // []time.Duration{time.Minute, time.Second}, nil
+func (v Value) DurationSlice(opts ...Option[time.Duration]) ([]time.Duration, error) {
+	option := getOpts(opts)
+	return get(v, option.getDefault(), func(payload string) ([]time.Duration, error) {
+		return toSlice(payload, option.delimiter, time.ParseDuration)
+	})
+}
+
+// MustDurationSlice return []time.Duration if error not nil will be ignored
+//
+//	NewValue("1m,2s").MustDurationSlice() // []time.Duration{time.Minute, time.Second*2}
+//	NewValue("").MustDurationSlice() // nil
+//	NewValue("1m;2s").MustDurationSlice(WithDelimiter[time.Duration](";")) // []time.Duration{time.Minute, time.Second*2}
+//	NewValue("").MustDurationSlice(WithDefault[time.Duration](time.Minute, time.Second)) // []time.Duration{time.Minute, time.Second}
+func (v Value) MustDurationSlice(opts ...Option[time.Duration]) []time.Duration {
+	return must(v.DurationSlice(opts...))
 }
 
 // Int returns int value
