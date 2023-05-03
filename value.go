@@ -195,6 +195,53 @@ func (v Value) MustDurationSlice(opts ...Option[time.Duration]) []time.Duration 
 	return must(v.DurationSlice(opts...))
 }
 
+// Time returns time.Time value of payload
+//
+//	NewValue("3:04PM").Time(time.Kitchen) // 3:04PM, nil
+//	NewValue("").Time(time.Kitchen) // time.Time{}, nil
+//	NewValue("").Time(time.Kitchen, time.Now()) // current local time, nil
+//	NewValue("abc").Time(time.Kitchen) // time.Time{}, error
+func (v Value) Time(layout string, dv ...time.Time) (time.Time, error) {
+	return get(v, dv, func(payload string) (time.Time, error) {
+		return time.Parse(layout, payload)
+	})
+}
+
+// MustTime returns time.Time value of payload ignore error
+//
+//	NewValue("3:04PM").Time(time.Kitchen) // 3:04PM, nil
+//	NewValue("").Time(time.Kitchen) // time.Time{}, nil
+//	NewValue("").Time(time.Kitchen, time.Now()) // current local time, nil
+//	NewValue("abc").Time(time.Kitchen) // time.Time{}, error
+func (v Value) MustTime(layout string, dv ...time.Time) time.Time {
+	return must(v.Time(layout, dv...))
+}
+
+// TimeSlice returns []time.Time
+//
+//	NewValue("3:04PM,4:03PM").TimeSlice() // []time.Time{3:04PM, 4:03PM}, nil
+//	NewValue("").TimeSlice() // nil, error
+//	NewValue("3:04PM;4:03PM").TimeSlice(WithDelimiter[time.Time](";")) // []time.Time{3:04PM, 4:03PM}, nil
+//	NewValue("").TimeSlice(WithDefault[time.Time](time.Now())) // []time.Time{current local time}, nil
+func (v Value) TimeSlice(layout string, opts ...Option[time.Time]) ([]time.Time, error) {
+	option := getOpts(opts)
+	return get(v, option.getDefault(), func(payload string) ([]time.Time, error) {
+		return toSlice(payload, option.delimiter, func(payload string) (time.Time, error) {
+			return time.Parse(layout, payload)
+		})
+	})
+}
+
+// MustTimeSlice return []time.Time if error not nil will be ignored
+//
+//	NewValue("3:04PM,4:03PM").MustTimeSlice() // []time.Time{3:04PM, 4:03PM}
+//	NewValue("").MustTimeSlice() // nil
+//	NewValue("3:04PM;4:03PM").MustTimeSlice(WithDelimiter[time.Time](";")) // []time.Time{3:04PM, 4:03PM}
+//	NewValue("").MustTimeSlice(WithDefault[time.Time](time.Now())) // []time.Time{current local time}
+func (v Value) MustTimeSlice(layout string, opts ...Option[time.Duration]) []time.Duration {
+	return must(v.DurationSlice(opts...))
+}
+
 // Int returns int value
 //
 //	NewValue("5").Int() // 5, nil

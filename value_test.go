@@ -1,9 +1,10 @@
 package argsx
 
 import (
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestString(t *testing.T) {
@@ -37,7 +38,7 @@ func TestString(t *testing.T) {
 	slice = Fetch("string.slice.empty").MustStringSlice()
 	require.Equal(t, 0, len(slice))
 
-	slice, err = Fetch("string.slice.default").StringSlice(WithDefault[string]("Z", "Y"))
+	slice, err = Fetch("string.slice.default").StringSlice(WithDefault("Z", "Y"))
 	require.NoError(t, err)
 	require.Equal(t, []string{"Z", "Y"}, slice)
 }
