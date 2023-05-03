@@ -16,8 +16,8 @@ type Value struct {
 // parser is a generic type convert string to T
 type parser[T any] func(payload string) (T, error)
 
-// NewValue returns Value instance with payload
-func NewValue(payload string) Value {
+// New returns Value instance with payload
+func New(payload string) Value {
 	return Value{payload: payload}
 }
 
