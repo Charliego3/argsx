@@ -17,7 +17,7 @@ type Value struct {
 type parser[T any] func(payload string) (T, error)
 
 // New returns Value instance with payload
-func New(payload string) Value {
+func NewV(payload string) Value {
 	return Value{payload: payload}
 }
 
