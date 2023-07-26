@@ -1,4 +1,4 @@
-module github.com/charliego93/argsx
+module github.com/charliego3/argsx
 
 go 1.20
 
